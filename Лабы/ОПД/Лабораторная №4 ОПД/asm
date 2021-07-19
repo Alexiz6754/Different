@@ -1,0 +1,51 @@
+
+ORG 347
+Z:  WORD    1
+Y:  WORD    1
+X:  WORD    1
+A:  WORD    1
+
+ORG 6B4
+LD &1
+BMI 4
+BEQ 3
+CMP A
+BEQ 6
+BLT 5
+ASL
+ASL
+ADD &1
+SUB 5
+JUMP 1
+LD 2
+ST &1
+RET
+T:  WORD 0x070B
+U:  WORD 0x003B
+ 
+ORG 32F
+BEGIN:
+    CLA
+    ST (IP+19)
+    LD (IP + 15)
+    INC
+    PUSH
+    CALL 6B4
+    POP
+    SUB 13
+    ST 12
+    LD 10
+    INC
+    PUSH
+    CALL 6B4
+    POP
+    ADD C
+    ST B
+    LD 8
+    PUSH
+    CALL 6B4
+    POP
+    PUSH
+    ADD 5
+    ST  4
+    HLT

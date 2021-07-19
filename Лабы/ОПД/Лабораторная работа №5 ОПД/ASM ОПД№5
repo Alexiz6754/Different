@@ -1,0 +1,55 @@
+ORG 0x646
+STRING: WORD 0x0005, 0xC1EC, 0xC1C2, 0x0005   ;Первый элемент - это длина строки
+ 
+ORG 0x19E
+I:     WORD 0x646   ;Адрес текущего элемента строки (Начиная с длины)
+COUNT: WORD ?       ;Количество символов к выводу
+
+BIG: WORD ?
+LITTLE: WORD ?
+
+START:  CLA
+        LD (I)+
+        CMP #0
+        BEQ FINISH
+        ST COUNT    ;Сохранили количество элементов строки, если их = 0, то конец
+        CLA
+        
+READY:  IN 7
+        AND #0x40
+        BEQ READY   
+        LD COUNT
+        OUT 6       ;Как только нажали кнопку, выводим длину строки
+        CMP #0
+        BEQ FINISH  ;Если количество равно 0, то закончили выполнение
+        
+READ:   CLA
+        LD (I)+
+        ST BIG
+        SWAB
+        ST LITTLE   ;Сохранили 1 байт строки, перенесли указатель
+        
+S1:     IN 7
+        AND #0x40
+        BEQ S1      ;Ожидание нажатия кнопки готовности
+        LD BIG
+        OUT 6       ;Вывели символ на ВУ
+        LD COUNT
+        DEC
+        CMP #0
+        BEQ FINISH  ;Уменьшили количество символов для вывода на 1, если 0, то конец
+        ST COUNT
+        
+S2:     IN 7
+        AND #0x40
+        BEQ S2      ;Ожидание нажатия кнопки готовности
+        LD LITTLE
+        OUT 6       ;Вывели символ на ВУ
+        LD COUNT
+        DEC
+        CMP #0
+        BEQ FINISH  ;Уменьшили количество символов для вывода на 1, если 0, то конец
+        ST  COUNT
+        JUMP READ
+        
+FINISH: HLT

@@ -1,0 +1,59 @@
+ORG	0x0
+V0:	WORD	$DEFAULT, 0x180
+V1:	WORD	$INT1, 0x180
+V2:	WORD	$DEFAULT, 0x180
+V3:	WORD	$INT3, 0x180
+V4:	WORD	$DEFAULT, 0x180
+V5:	WORD	$DEFAULT, 0x180
+V6:	WORD	$DEFAULT, 0x180
+V7:	WORD	$DEFAULT, 0x180
+DEFAULT:    IRET
+
+ORG 0x43
+X:      WORD    0x0004  ;Изменяемая переменная
+MAX:    WORD    0x001E  ;Максимальное значение ОДЗ
+MIN:    WORD    0xFFE2  ;Минимальное значение ОДЗ
+
+START:  DI  
+        CLA
+        OUT 1
+        OUT 5
+        OUT 0xB
+        OUT 0x13
+        OUT 0x17
+        OUT 0x1C
+        OUT 0x1F    ;Загрузка начальных векторов прерывания
+        
+        LD #0x9
+        OUT 3   ;Загрузка вектора-1 в MR КВУ 1
+        LD #0xB
+        OUT 0xB ;Загрузка вектора 3 в MR КВУ 3
+        
+MAIN:   DI  ;Чтобы сохранить "атомарность" операции
+        NOP ;Пометка точки останова для проверки
+        LD X
+        SUB #2
+        CMP MIN
+        BGE SAVE 
+        LD MAX  ;Цикл основной программы
+
+SAVE:   ST X
+        EI
+        JUMP MAIN   ;Сохранение переменной в память
+
+INT1:   PUSH    ;Сохранили AC
+        ASL
+        ASL
+        ADD #5
+        OUT 2   ;Реализовали функцию и вывели на ВУ-1
+        POP     ;Вернули AC
+        NOP     ;Пометка точки останова для проверки
+        IRET
+        
+INT3:   CLA
+        IN  6
+        NEG
+        SXTB
+        ST X
+        NOP     ;Пометка точки останова для проверки
+        IRET
